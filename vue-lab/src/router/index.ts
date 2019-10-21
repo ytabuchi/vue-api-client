@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 // 1. importに以下を追加します
 import Table from '../views/Table.vue';
+import Form from '../views/Form.vue';
 
 Vue.use(VueRouter)
 
@@ -12,11 +13,15 @@ const routes = [
     name: 'home',
     component: Home
   },
-  // 2. routesに以下を追加します
   {
     path: '/table',
     name: 'table',
     component: Table
+  },
+  {
+    path: '/form',
+    name: 'form',
+    component: Form
   },
   {
     path: '/about',
