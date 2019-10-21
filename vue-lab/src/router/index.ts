@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 // 1. importに以下を追加します
 import Table from '../views/Table.vue';
 import Form from '../views/Form.vue';
+import Search from '../views/Search.vue';
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,11 @@ const routes = [
     path: '/form',
     name: 'form',
     component: Form
+  },
+  {
+    path: '/search',
+    nama: 'search',
+    component: Search
   },
   {
     path: '/about',
