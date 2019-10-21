@@ -6,6 +6,8 @@
     <ul id="item-list">
       <li v-for="item in items" :key="item.id">{{item.name}}</li>
     </ul>
+    <h3>イベントハンドリング</h3>
+    <button v-on:click="onClick">実行</button>
   </div>
 </template>
 
@@ -39,6 +41,12 @@ export default Vue.extend({
         }
       ] as Item[]
     };
+  },
+  // ここにメソッドを追加する
+  methods: {
+    onClick(): void {
+      alert(this.msg);
+    }
   }
 });
 </script>
