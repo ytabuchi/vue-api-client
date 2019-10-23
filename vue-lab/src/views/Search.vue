@@ -1,7 +1,8 @@
 <template>
   <div class="translator">
-    <h2>JP Address Finder</h2>
+    <h2>Translatorの実装</h2>
     <el-row :gutter="40">
+      <el-col :span="12">
         <el-form ref="form" :model="target">
           <el-form-item label="翻訳するテキスト">
             <el-input
@@ -15,18 +16,19 @@
             <el-button type="primary" @click="onSubmit">翻訳</el-button>
           </el-form-item>
         </el-form>
-    </el-row>
-    <el-row>
+      </el-col>
+      <el-col :span="12">
         <span>翻訳結果</span>
         <ul>
-          <li>入力された言語: {{ target.translatorResult.detectedLanguage }}</li>
-          <li>翻訳された言語: {{ target.translatorResult.translatedLanguage }}</li>
+          <li>入力された言語: ja</li>
+          <li>翻訳された言語: {{ target.translatorResult.to }}</li>
           <li>翻訳結果:
             <div>
-              {{ target.translatorResult.translatedText }}
+              {{ target.translatorResult.text }}
             </div>
           </li>
         </ul>
+      </el-col>
     </el-row>
   </div>
 </template>
@@ -41,12 +43,23 @@
 import Vue from "vue";
 import axios, { AxiosResponse } from "axios";
 
+/*
+target.translatorResult.detectedLanguage
+target.translatorResult.translatedLanguage
+target.translatorResult.translatedText
+*/
+
 // API 実行結果
 class TranslatorResult {
-  detectedLanguage: string = "";
-  translatedText: string = "";
-  translatedLanguage: string = "";
+  // translations: Array<Translation> = new Array<Translation>();
+  text: string = "";
+  to: string = "";
 }
+
+// class Translation {
+//   text: string = "";
+//   to: string = "";
+// }
 
 // フォームデータ
 class TranslatorForm {
@@ -59,7 +72,6 @@ export default Vue.extend({
   data() {
     return {
       target: new TranslatorForm(),
-      apiPrefix: "{YOUR-PREFIX}"
     };
   },
   methods: {
@@ -72,15 +84,28 @@ export default Vue.extend({
         this.target.translatorResult = translatorResult;
       }
     },
+
     // Azure Text Translator APIの実行
     async invokeTranslator(text: string): Promise<TranslatorResult> {
-      const res: AxiosResponse = await axios.post(
-        "https://" + this.apiPrefix + "-vue.azurewebsites.net/api/translate",
-        {
-          target: text
+      const instance = axios.create({
+        baseURL: 'https://api.cognitive.microsofttranslator.com/translate',
+        headers: {
+          "Content-Type": "application/json",
+          "Ocp-Apim-Subscription-Key": "b24c808b1b1d43a793b77e7290751e3b"
         }
+      });
+      const res: AxiosResponse = await instance.post(
+        "?api-version=3.0&from=ja&to=en", 
+        [
+          {
+            Text: text
+          }
+        ]
       );
-      return res.data;
+
+      console.log(res.data);
+
+      return res.data[0].translations[0];
     }
   }
 });
