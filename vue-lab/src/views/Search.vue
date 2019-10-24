@@ -87,11 +87,12 @@ export default Vue.extend({
 
     // Azure Text Translator APIの実行
     async invokeTranslator(text: string): Promise<TranslatorResult> {
+      console.log(process.env.VUE_APP_APIKEY);
       const instance = axios.create({
         baseURL: 'https://api.cognitive.microsofttranslator.com/translate',
         headers: {
           "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": "<APIKEY>
+          "Ocp-Apim-Subscription-Key": process.env.VUE_APP_APIKEY
         }
       });
       const res: AxiosResponse = await instance.post(
