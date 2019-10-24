@@ -91,7 +91,7 @@ export default Vue.extend({
         baseURL: 'https://api.cognitive.microsofttranslator.com/translate',
         headers: {
           "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": "<APIKEY>
+          "Ocp-Apim-Subscription-Key": process.env.VUE_APP_APIKEY
         }
       });
       const res: AxiosResponse = await instance.post(
