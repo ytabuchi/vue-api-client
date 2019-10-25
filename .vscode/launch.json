@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "vuejs: chrome",
             "url": "http://localhost:8081",
-            "webRoot": "${workspaceFolder}/vue-lab/src",
+            "webRoot": "${workspaceFolder}/src",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
                 "webpack:///./src/*": "${webRoot}/*"
