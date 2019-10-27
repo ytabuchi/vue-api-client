@@ -1,34 +1,29 @@
 <template>
   <div class="translator">
-    <h2>Translatorの実装</h2>
-    <el-row :gutter="40">
-      <el-col :span="12">
-        <el-form ref="form" :model="target">
-          <el-form-item label="翻訳するテキスト">
-            <el-input
-              type="textarea"
-              rows="8"
-              v-model="target.inputText"
-              placeholder="翻訳するテキストを入力して下さい"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onSubmit">翻訳</el-button>
-          </el-form-item>
-        </el-form>
-      </el-col>
-      <el-col :span="12">
-        <span>翻訳結果</span>
-        <ul>
-          <li>入力された言語: ja</li>
-          <li>翻訳された言語: {{ target.searchResult.to }}</li>
-          <li>翻訳結果:
-            <div>
-              {{ target.searchResult.text }}
-            </div>
-          </li>
-        </ul>
-      </el-col>
+    <h2>JP Address Finder</h2>
+    <el-row>
+      <el-form ref="form" :model="target">
+        <el-form-item label="市区町村">
+          <el-input type="input" v-model="target.inputCity" placeholder="市区町村を入力してください。" />
+        </el-form-item>
+        <el-form-item label="それ以下">
+          <el-input type="input" v-model="target.inputAddress" placeholder="市区町村以下を入力してください" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">検索</el-button>
+        </el-form-item>
+      </el-form>
+    </el-row>
+    <el-row>
+      <span>検索結果</span>
+      <div v-for="searchResult in target"　v-bind:key="searchResult.id">
+        {{ searchResult.zip }}, {{ searchResult.jp_city }}, {{ searchResult.jp_address}} </div>
+      <div class="table">
+        <el-table :data="target.searchResult">
+          <el-table-column prop="jp_city" label="市区町村"></el-table-column>
+          <el-table-column prop="jp_address" label="それ以下"></el-table-column>
+        </el-table>
+      </div>
     </el-row>
   </div>
 </template>
@@ -43,15 +38,9 @@
 import Vue from "vue";
 import axios, { AxiosResponse } from "axios";
 
-/*
-target.searchResult.detectedLanguage
-target.searchResult.translatedLanguage
-target.searchResult.translatedText
-*/
-
 // API 実行結果
 class SearchResult {
-  address: Address[] = new Array<Address>();
+  AddressList: Address[] = new Array<Address>();
 }
 
 class Address {
@@ -67,7 +56,8 @@ class Address {
 
 // フォームデータ
 class AddressForm {
-  inputText: string = "";
+  inputCity: string = "";
+  inputAddress: string = "";
   searchResult: SearchResult = new SearchResult();
 }
 
@@ -75,35 +65,38 @@ class AddressForm {
 export default Vue.extend({
   data() {
     return {
-      target: new AddressForm
-    (),
+      target: new AddressForm()
     };
   },
   methods: {
     // 翻訳ボタンクリック時のイベントハンドラ
     async onSubmit() {
-      if (this.target.inputText) {
-        const searchResult = await this.invokeSearch(
-          this.target.inputText
-        );
-        this.target.searchResult = searchResult;
-      }
+      const searchResult = await this.invokeSearch(
+        this.target.inputCity,
+        this.target.inputAddress
+      );
+      this.target.searchResult.AddressList = searchResult;
     },
 
     // CData API Server への Get
-    async invokeSearch(text: string): Promise<SearchResult> {
+    async invokeSearch(cityText: string, addressText: string): Promise<SearchResult> {
       const instance = axios.create({
-        baseURL: 'http://localhost:8080/apiserver/api.rsc',
+        baseURL: "http://localhost:8080/apiserver/api.rsc",
         headers: {
           "x-cdata-authtoken": process.env.VUE_APP_CDATATOKEN
         }
       });
-      const params = "city?$filter=contains(JP_Address,'" + text + "')";
+      const params =
+        "city?" + 
+        "$filter=" + 
+        "contains(JP_City,'" + cityText + "')" +
+        " AND " + 
+        "contains(JP_Address,'" + addressText + "')";
       const res: AxiosResponse = await instance.get(params);
 
       console.log(res.data);
 
-      return res.data.value;
+      return res.data;
     }
   }
 });
