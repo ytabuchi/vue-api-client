@@ -21,10 +21,10 @@
         <span>翻訳結果</span>
         <ul>
           <li>入力された言語: ja</li>
-          <li>翻訳された言語: {{ target.translatorResult.to }}</li>
+          <li>翻訳された言語: {{ target.searchResult.to }}</li>
           <li>翻訳結果:
             <div>
-              {{ target.translatorResult.text }}
+              {{ target.searchResult.text }}
             </div>
           </li>
         </ul>
@@ -44,68 +44,66 @@ import Vue from "vue";
 import axios, { AxiosResponse } from "axios";
 
 /*
-target.translatorResult.detectedLanguage
-target.translatorResult.translatedLanguage
-target.translatorResult.translatedText
+target.searchResult.detectedLanguage
+target.searchResult.translatedLanguage
+target.searchResult.translatedText
 */
 
 // API 実行結果
-class TranslatorResult {
-  // translations: Array<Translation> = new Array<Translation>();
-  text: string = "";
-  to: string = "";
+class SearchResult {
+  address: Address[] = new Array<Address>();
 }
 
-// class Translation {
-//   text: string = "";
-//   to: string = "";
-// }
+class Address {
+  id: number = 0;
+  zip: string = "";
+  prefecture: string = "";
+  city: string = "";
+  address: string = "";
+  jp_prefecture: string = "";
+  jp_city: string = "";
+  jp_address: string = "";
+}
 
 // フォームデータ
-class TranslatorForm {
+class AddressForm {
   inputText: string = "";
-  translatorResult: TranslatorResult = new TranslatorResult();
+  searchResult: SearchResult = new SearchResult();
 }
 
 // ビューモデル
 export default Vue.extend({
   data() {
     return {
-      target: new TranslatorForm(),
+      target: new AddressForm
+    (),
     };
   },
   methods: {
     // 翻訳ボタンクリック時のイベントハンドラ
     async onSubmit() {
       if (this.target.inputText) {
-        const translatorResult = await this.invokeTranslator(
+        const searchResult = await this.invokeSearch(
           this.target.inputText
         );
-        this.target.translatorResult = translatorResult;
+        this.target.searchResult = searchResult;
       }
     },
 
-    // Azure Text Translator APIの実行
-    async invokeTranslator(text: string): Promise<TranslatorResult> {
+    // CData API Server への Get
+    async invokeSearch(text: string): Promise<SearchResult> {
       const instance = axios.create({
-        baseURL: 'https://api.cognitive.microsofttranslator.com/translate',
+        baseURL: 'http://localhost:8080/apiserver/api.rsc',
         headers: {
-          "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": process.env.VUE_APP_APIKEY
+          "x-cdata-authtoken": process.env.VUE_APP_CDATATOKEN
         }
       });
-      const res: AxiosResponse = await instance.post(
-        "?api-version=3.0&from=ja&to=en", 
-        [
-          {
-            Text: text
-          }
-        ]
-      );
+      const params = "city?$filter=contains(JP_Address,'" + text + "')";
+      const res: AxiosResponse = await instance.get(params);
 
       console.log(res.data);
 
-      return res.data[0].translations[0];
+      return res.data.value;
     }
   }
 });
