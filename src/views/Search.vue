@@ -1,34 +1,32 @@
 <template>
   <div class="translator">
-    <h2>Translatorの実装</h2>
-    <el-row :gutter="40">
-      <el-col :span="12">
-        <el-form ref="form" :model="target">
-          <el-form-item label="翻訳するテキスト">
-            <el-input
-              type="textarea"
-              rows="8"
-              v-model="target.inputText"
-              placeholder="翻訳するテキストを入力して下さい"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="onSubmit">翻訳</el-button>
-          </el-form-item>
-        </el-form>
-      </el-col>
-      <el-col :span="12">
-        <span>翻訳結果</span>
-        <ul>
-          <li>入力された言語: ja</li>
-          <li>翻訳された言語: {{ target.translatorResult.to }}</li>
-          <li>翻訳結果:
-            <div>
-              {{ target.translatorResult.text }}
-            </div>
-          </li>
-        </ul>
-      </el-col>
+    <h2>JP Address Finder</h2>
+    <el-row>
+      <el-form ref="form" :model="target">
+        <el-form-item label="市区町村">
+          <el-input type="input" v-model="target.inputCity" placeholder="市区町村を入力してください。" />
+        </el-form-item>
+        <el-form-item label="それ以下">
+          <el-input type="input" v-model="target.inputAddress" placeholder="市区町村以下を入力してください" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">検索</el-button>
+        </el-form-item>
+      </el-form>
+    </el-row>
+    <el-row>
+      <span>検索結果</span>
+      <div>
+        <el-table :data="target.searchResult">
+          <el-table-column prop="Zip" label="郵便番号"></el-table-column>
+          <el-table-column prop="JP_Prefecture" label="都道府県"></el-table-column>
+          <el-table-column prop="JP_City" label="市区町村"></el-table-column>
+          <el-table-column prop="JP_Address" label="それ以下"></el-table-column>
+          <el-table-column prop="Prefecture" label="Prefecture"></el-table-column>
+          <el-table-column prop="City" label="City"></el-table-column>
+          <el-table-column prop="Address" label="Address"></el-table-column>
+        </el-table>
+      </div>
     </el-row>
   </div>
 </template>
@@ -43,69 +41,60 @@
 import Vue from "vue";
 import axios, { AxiosResponse } from "axios";
 
-/*
-target.translatorResult.detectedLanguage
-target.translatorResult.translatedLanguage
-target.translatorResult.translatedText
-*/
-
 // API 実行結果
-class TranslatorResult {
-  // translations: Array<Translation> = new Array<Translation>();
-  text: string = "";
-  to: string = "";
+class Address {
+  Id: number = 0;
+  Zip: string = "";
+  Prefecture: string = "";
+  City: string = "";
+  Address: string = "";
+  JP_Prefecture: string = "";
+  JP_City: string = "";
+  JP_Address: string = "";
 }
 
-// class Translation {
-//   text: string = "";
-//   to: string = "";
-// }
-
 // フォームデータ
-class TranslatorForm {
-  inputText: string = "";
-  translatorResult: TranslatorResult = new TranslatorResult();
+class AddressForm {
+  inputCity: string = "";
+  inputAddress: string = "";
+  searchResult: Address[] = new Array<Address>();
 }
 
 // ビューモデル
 export default Vue.extend({
   data() {
     return {
-      target: new TranslatorForm(),
+      target: new AddressForm()
     };
   },
   methods: {
     // 翻訳ボタンクリック時のイベントハンドラ
     async onSubmit() {
-      if (this.target.inputText) {
-        const translatorResult = await this.invokeTranslator(
-          this.target.inputText
-        );
-        this.target.translatorResult = translatorResult;
-      }
+      const res = await this.invokeSearch(
+        this.target.inputCity,
+        this.target.inputAddress
+      );
+      this.target.searchResult = res;
     },
 
-    // Azure Text Translator APIの実行
-    async invokeTranslator(text: string): Promise<TranslatorResult> {
+    // CData API Server への Get
+    async invokeSearch(cityText: string, addressText: string): Promise<Address[]> {
       const instance = axios.create({
-        baseURL: 'https://api.cognitive.microsofttranslator.com/translate',
+        baseURL: "http://localhost:8080/apiserver/api.rsc",
         headers: {
-          "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": process.env.VUE_APP_APIKEY
+          "x-cdata-authtoken": process.env.VUE_APP_CDATATOKEN
         }
       });
-      const res: AxiosResponse = await instance.post(
-        "?api-version=3.0&from=ja&to=en", 
-        [
-          {
-            Text: text
-          }
-        ]
-      );
+      const params =
+        "city?" + 
+        "$filter=" + 
+        "contains(JP_City,'" + cityText + "')" +
+        " AND " + 
+        "contains(JP_Address,'" + addressText + "')";
+      const res: AxiosResponse = await instance.get(params);
 
-      console.log(res.data);
-
-      return res.data[0].translations[0];
+      console.log(res.data.value);
+      return res.data.value;
     }
   }
 });
