@@ -16,12 +16,15 @@
     </el-row>
     <el-row>
       <span>検索結果</span>
-      <div v-for="searchResult in target"　v-bind:key="searchResult.id">
-        {{ searchResult.zip }}, {{ searchResult.jp_city }}, {{ searchResult.jp_address}} </div>
-      <div class="table">
+      <div>
         <el-table :data="target.searchResult">
-          <el-table-column prop="jp_city" label="市区町村"></el-table-column>
-          <el-table-column prop="jp_address" label="それ以下"></el-table-column>
+          <el-table-column prop="Zip" label="郵便番号"></el-table-column>
+          <el-table-column prop="JP_Prefecture" label="都道府県"></el-table-column>
+          <el-table-column prop="JP_City" label="市区町村"></el-table-column>
+          <el-table-column prop="JP_Address" label="それ以下"></el-table-column>
+          <el-table-column prop="Prefecture" label="Prefecture"></el-table-column>
+          <el-table-column prop="City" label="City"></el-table-column>
+          <el-table-column prop="Address" label="Address"></el-table-column>
         </el-table>
       </div>
     </el-row>
@@ -39,26 +42,22 @@ import Vue from "vue";
 import axios, { AxiosResponse } from "axios";
 
 // API 実行結果
-class SearchResult {
-  AddressList: Address[] = new Array<Address>();
-}
-
 class Address {
-  id: number = 0;
-  zip: string = "";
-  prefecture: string = "";
-  city: string = "";
-  address: string = "";
-  jp_prefecture: string = "";
-  jp_city: string = "";
-  jp_address: string = "";
+  Id: number = 0;
+  Zip: string = "";
+  Prefecture: string = "";
+  City: string = "";
+  Address: string = "";
+  JP_Prefecture: string = "";
+  JP_City: string = "";
+  JP_Address: string = "";
 }
 
 // フォームデータ
 class AddressForm {
   inputCity: string = "";
   inputAddress: string = "";
-  searchResult: SearchResult = new SearchResult();
+  searchResult: Address[] = new Array<Address>();
 }
 
 // ビューモデル
@@ -71,15 +70,15 @@ export default Vue.extend({
   methods: {
     // 翻訳ボタンクリック時のイベントハンドラ
     async onSubmit() {
-      const searchResult = await this.invokeSearch(
+      const res = await this.invokeSearch(
         this.target.inputCity,
         this.target.inputAddress
       );
-      this.target.searchResult.AddressList = searchResult;
+      this.target.searchResult = res;
     },
 
     // CData API Server への Get
-    async invokeSearch(cityText: string, addressText: string): Promise<SearchResult> {
+    async invokeSearch(cityText: string, addressText: string): Promise<Address[]> {
       const instance = axios.create({
         baseURL: "http://localhost:8080/apiserver/api.rsc",
         headers: {
@@ -94,9 +93,8 @@ export default Vue.extend({
         "contains(JP_Address,'" + addressText + "')";
       const res: AxiosResponse = await instance.get(params);
 
-      console.log(res.data);
-
-      return res.data;
+      console.log(res.data.value);
+      return res.data.value;
     }
   }
 });
