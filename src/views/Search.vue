@@ -80,8 +80,10 @@ export default Vue.extend({
     // CData API Server への Get
     async invokeSearch(cityText: string, addressText: string): Promise<Address[]> {
       const instance = axios.create({
-        baseURL: "http://localhost:8080/apiserver/api.rsc",
+        baseURL: "http://localhost:8000/",
+        // baseURL: "http://localhost:8080/apiserver/api.rsc",
         headers: {
+          "authorization": "Bearer " + process.env.VUE_APP_JWT,
           "x-cdata-authtoken": process.env.VUE_APP_CDATATOKEN
         }
       });
