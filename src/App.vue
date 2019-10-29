@@ -1,29 +1,10 @@
 <template>
   <div id="app">
-    <el-container>
-      <el-aside>
-        <el-menu id="nav">
-          <el-menu-item>
-            <router-link to="/">Home</router-link>
-          </el-menu-item>
-          <el-menu-item>
-            <router-link to="/table">Table</router-link>
-          </el-menu-item>
-          <el-menu-item>
-            <router-link to="/form">Form</router-link>
-          </el-menu-item>
-          <el-menu-item>
-            <router-link to="/search">Search</router-link>
-          </el-menu-item>
-          <el-menu-item>
-            <router-link to="/about">About</router-link>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
-      <el-main>
-        <router-view />
-      </el-main>
-    </el-container>
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <router-view/>
   </div>
 </template>
 
@@ -34,6 +15,8 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 </style>
