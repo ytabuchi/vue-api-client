@@ -2,12 +2,16 @@
 
 vue.js API client webapp
 
-`<IMAGE>: ytabuchi/vue-ts-app`, `<CONTAINER>: vue`, `<DOCKER_NETWORK>: mysql-network`
+## Build
 
 ```sh
-docker build -t <IMAGE> .
+docker build -t ytabuchi/vue-api-client .
 ```
 
+
+## Run
+
 ```sh
-docker run --rm --name <CONTAINER> --network <DOCKER_NETWORK> -p 8081:80 -d <IMAGE>
+docker run -d --rm --name vue --network mysql-network -p 8081:80 ytabuchi/vue-api-client
 ```
+
